@@ -5,24 +5,25 @@ import google.generativeai as genai
 st.set_page_config(page_title="AI Content Generator", layout="wide")
 
 # API Configuration
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-# Stability ke liye purana model use kar rahe hain jo v1beta pe support karega
-model = genai.GenerativeModel('gemini-pro')
+# St.secrets se key tabhi pick hogi jab aapne "Settings" > "Secrets" mein save ki ho
+try:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    # Flash model sabse reliable hai
+    model = genai.GenerativeModel('gemini-1.5-flash')
+except Exception as e:
+    st.error(f"Configuration Error: {e}")
 
 # Initialize History
 if 'history' not in st.session_state:
     st.session_state.history = []
 
-# --- Sidebar for History ---
+# --- Sidebar ---
 st.sidebar.title("📜 History")
 for i, entry in enumerate(st.session_state.history):
     st.sidebar.write(f"Draft {i+1}: {entry[:20]}...")
 
 # --- Main App ---
 st.title("✨ AI Content Generator")
-
-if st.button("🔄 New Content"):
-    st.rerun()
 
 # Inputs
 mode = st.selectbox("Select Role:", ["Student", "Creator", "Business Brand"])
@@ -50,12 +51,9 @@ if st.button("✨ Generate Content"):
             try:
                 response = model.generate_content(prompt)
                 result = response.text
-                
-                # Update History
                 st.session_state.history.append(result)
-                
                 st.success("Draft Generated!")
                 st.write(result)
                 st.download_button("📥 Download Result", result, file_name="generated_content.txt")
             except Exception as e:
-                st.error("Error: Please make sure your API Key has access to Gemini Pro.")
+                st.error(f"Generation Error: {e}. Please check your API Key in Settings.")
