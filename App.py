@@ -1,33 +1,29 @@
 import streamlit as st
 import google.generativeai as genai
+import os
 
 # Page Configuration
 st.set_page_config(page_title="AI Content Generator", layout="wide")
 
-# API Configuration
-if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    # Hum yahan 'gemini-1.5-flash' use kar rahe hain, ye ab stable hai
-    model = genai.GenerativeModel('gemini-1.5-flash')
-else:
-    st.error("API Key not found! Please check Settings -> Secrets.")
+# API Configuration - Force set environment variable
+api_key = st.secrets["GEMINI_API_KEY"]
+os.environ["GOOGLE_API_KEY"] = api_key
+genai.configure(api_key=api_key)
 
-# Session State for History
-if 'history' not in st.session_state:
-    st.session_state.history = []
+# Model selection - Using 'gemini-pro' specifically to avoid flash/v1beta issues
+try:
+    model = genai.GenerativeModel('gemini-pro')
+except Exception as e:
+    st.error(f"Model Load Error: {e}")
 
-# --- Sidebar ---
-st.sidebar.title("📜 History")
-for i, entry in enumerate(st.session_state.history):
-    st.sidebar.write(f"Draft {i+1}: {entry[:20]}...")
-
-# --- Main App ---
+# --- UI Components ---
 st.title("✨ AI Content Generator")
 
 # Inputs
 mode = st.selectbox("Select Role:", ["Student", "Creator", "Business Brand"])
 user_input = st.text_area("What's the update today?")
 url_input = st.text_input("🔗 Paste a URL to analyze:")
+
 uploaded_file = st.file_uploader("Upload Assets:", type=['jpg', 'png', 'mp4', 'mov'])
 
 col1, col2 = st.columns(2)
@@ -47,16 +43,9 @@ if st.button("✨ Generate Content"):
             prompt = f"Role: {mode}. Update: {user_input}. URL: {url_input}. Language: {language}. Audience: {target_audience}. Platforms: {', '.join(platforms)}."
             
             try:
-                # generate_content call
                 response = model.generate_content(prompt)
-                result = response.text
-                
-                # Save to history
-                st.session_state.history.append(result)
-                
                 st.success("Draft Generated!")
-                st.write(result)
-                st.download_button("📥 Download Result", result, file_name="generated_content.txt")
+                st.write(response.text)
+                st.download_button("📥 Download Result", response.text, file_name="generated_content.txt")
             except Exception as e:
                 st.error(f"Generation Error: {e}")
-                st.info("Tip: Agar error bar-bar aa raha hai, toh 'Manage app' mein jaakar 'Clear cache' karke dekho.")
