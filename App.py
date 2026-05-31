@@ -4,9 +4,10 @@ import google.generativeai as genai
 # Page Configuration
 st.set_page_config(page_title="AI Content Generator", layout="wide")
 
-# API Configuration - Google ka latest model use kar rahe hain
+# API Configuration
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Stability ke liye purana model use kar rahe hain jo v1beta pe support karega
+model = genai.GenerativeModel('gemini-pro')
 
 # Initialize History
 if 'history' not in st.session_state:
@@ -47,7 +48,6 @@ if st.button("✨ Generate Content"):
             prompt = f"Role: {mode}. Update: {user_input}. URL: {url_input}. Language: {language}. Audience: {target_audience}. Platforms: {', '.join(platforms) if platforms else 'None'}."
             
             try:
-                # generate_content ka sahi tarika
                 response = model.generate_content(prompt)
                 result = response.text
                 
@@ -58,5 +58,4 @@ if st.button("✨ Generate Content"):
                 st.write(result)
                 st.download_button("📥 Download Result", result, file_name="generated_content.txt")
             except Exception as e:
-                st.error(f"Error: {e}")
-                
+                st.error("Error: Please make sure your API Key has access to Gemini Pro.")
