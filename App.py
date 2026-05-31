@@ -8,7 +8,7 @@ st.set_page_config(page_title="AI Content Generator", layout="wide")
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 model = genai.GenerativeModel('gemini-pro')
 
-# Initialize History in Session State
+# Initialize History
 if 'history' not in st.session_state:
     st.session_state.history = []
 
@@ -23,6 +23,7 @@ st.title("✨ AI Content Generator")
 if st.button("🔄 New Content"):
     st.rerun()
 
+# Inputs
 mode = st.selectbox("Select Role:", ["Student", "Creator", "Business Brand"])
 user_input = st.text_area("What's the update today?")
 url_input = st.text_input("🔗 Paste a URL to analyze:")
@@ -43,13 +44,17 @@ if st.button("✨ Generate Content"):
         st.warning("Please provide input!")
     else:
         with st.spinner("Generating..."):
-            prompt = f"Role: {mode}, Update: {user_input}, URL: {url_input}, Language: {language}, Audience: {target_audience}, Platforms: {platforms}"
-            response = model.generate_content(prompt)
-            result = response.text
+            prompt = f"Role: {mode}. Update: {user_input}. URL: {url_input}. Language: {language}. Audience: {target_audience}. Platforms: {', '.join(platforms) if platforms else 'None'}."
             
-            # Save to history
-            st.session_state.history.append(result)
-            
-            st.success("Draft Generated!")
-            st.write(result)
-            st.download_button("📥 Download Result", result, file_name="generated_content.txt")
+            try:
+                response = model.generate_content(prompt)
+                result = response.text
+                
+                # Update History
+                st.session_state.history.append(result)
+                
+                st.success("Draft Generated!")
+                st.write(result)
+                st.download_button("📥 Download Result", result, file_name="generated_content.txt")
+            except Exception as e:
+                st.error(f"Error: {e}")
