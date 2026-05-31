@@ -5,10 +5,14 @@ import google.generativeai as genai
 st.set_page_config(page_title="AI Content Generator", layout="wide")
 
 # API Configuration
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-1.0-pro')
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    # Hum yahan 'gemini-1.5-flash' use kar rahe hain, ye ab stable hai
+    model = genai.GenerativeModel('gemini-1.5-flash')
+else:
+    st.error("API Key not found! Please check Settings -> Secrets.")
 
-# Initialize History
+# Session State for History
 if 'history' not in st.session_state:
     st.session_state.history = []
 
@@ -40,13 +44,19 @@ if st.button("✨ Generate Content"):
         st.warning("Please provide input!")
     else:
         with st.spinner("Generating..."):
-            prompt = f"Role: {mode}. Update: {user_input}. URL: {url_input}. Language: {language}. Audience: {target_audience}. Platforms: {', '.join(platforms) if platforms else 'None'}."
+            prompt = f"Role: {mode}. Update: {user_input}. URL: {url_input}. Language: {language}. Audience: {target_audience}. Platforms: {', '.join(platforms)}."
+            
             try:
+                # generate_content call
                 response = model.generate_content(prompt)
                 result = response.text
+                
+                # Save to history
                 st.session_state.history.append(result)
+                
                 st.success("Draft Generated!")
                 st.write(result)
                 st.download_button("📥 Download Result", result, file_name="generated_content.txt")
             except Exception as e:
                 st.error(f"Generation Error: {e}")
+                st.info("Tip: Agar error bar-bar aa raha hai, toh 'Manage app' mein jaakar 'Clear cache' karke dekho.")
