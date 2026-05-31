@@ -6,7 +6,8 @@ st.set_page_config(page_title="AI Content Generator", layout="wide")
 
 # API Configuration
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-pro')
+# Updated model name
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # Initialize History
 if 'history' not in st.session_state:
@@ -36,7 +37,6 @@ with col1:
 with col2:
     target_audience = st.selectbox("Target Audience:", ["General", "Students", "Professionals", "Kids"])
 
-# Added Facebook to the platforms list
 platforms = st.multiselect("Choose Platforms:", ["Facebook", "Instagram", "LinkedIn", "YouTube", "Twitter"])
 
 # Generate Button
@@ -58,4 +58,4 @@ if st.button("✨ Generate Content"):
                 st.write(result)
                 st.download_button("📥 Download Result", result, file_name="generated_content.txt")
             except Exception as e:
-                st.error(f"Error: {e}. Please check your API Key in Settings.")
+                st.error(f"Error: {e}")
