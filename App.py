@@ -36,7 +36,8 @@ with col1:
 with col2:
     target_audience = st.selectbox("Target Audience:", ["General", "Students", "Professionals", "Kids"])
 
-platforms = st.multiselect("Choose Platforms:", ["Instagram", "LinkedIn", "YouTube", "Twitter"])
+# Added Facebook to the platforms list
+platforms = st.multiselect("Choose Platforms:", ["Facebook", "Instagram", "LinkedIn", "YouTube", "Twitter"])
 
 # Generate Button
 if st.button("✨ Generate Content"):
@@ -57,4 +58,4 @@ if st.button("✨ Generate Content"):
                 st.write(result)
                 st.download_button("📥 Download Result", result, file_name="generated_content.txt")
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Error: {e}. Please check your API Key in Settings.")
