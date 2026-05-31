@@ -6,8 +6,8 @@ st.set_page_config(page_title="AI Content Generator", layout="wide")
 
 # API Configuration
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-# Updated model name
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Using gemini-1.0-pro for better stability with older configurations
+model = genai.GenerativeModel('gemini-1.0-pro')
 
 # Initialize History
 if 'history' not in st.session_state:
