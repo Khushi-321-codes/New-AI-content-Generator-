@@ -5,19 +5,15 @@ import google.generativeai as genai
 st.set_page_config(page_title="AI Content Generator", layout="wide")
 
 # API Configuration
-# St.secrets se key tabhi pick hogi jab aapne "Settings" > "Secrets" mein save ki ho
-try:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    # Flash model sabse reliable hai
-    model = genai.GenerativeModel('gemini-1.5-flash')
-except Exception as e:
-    st.error(f"Configuration Error: {e}")
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+# Stability ke liye gemini-1.0-pro use kar rahe hain jo v1beta pe support karega
+model = genai.GenerativeModel('gemini-1.0-pro')
 
 # Initialize History
 if 'history' not in st.session_state:
     st.session_state.history = []
 
-# --- Sidebar ---
+# --- Sidebar for History ---
 st.sidebar.title("📜 History")
 for i, entry in enumerate(st.session_state.history):
     st.sidebar.write(f"Draft {i+1}: {entry[:20]}...")
@@ -40,8 +36,7 @@ with col2:
 
 platforms = st.multiselect("Choose Platforms:", ["Facebook", "Instagram", "LinkedIn", "YouTube", "Twitter"])
 
-# Generate Button
-if st.button("✨ Generate Content"):
+# Generate Buttonf st.button("✨ Generate Content"):
     if not user_input:
         st.warning("Please provide input!")
     else:
@@ -51,9 +46,12 @@ if st.button("✨ Generate Content"):
             try:
                 response = model.generate_content(prompt)
                 result = response.text
+                
+                # Update History
                 st.session_state.history.append(result)
+                
                 st.success("Draft Generated!")
                 st.write(result)
                 st.download_button("📥 Download Result", result, file_name="generated_content.txt")
             except Exception as e:
-                st.error(f"Generation Error: {e}. Please check your API Key in Settings.")
+                st.error(f"Error: {e}. Please make sure your API Key has access to Gemini Pro."
